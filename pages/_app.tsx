@@ -1,8 +1,9 @@
 import "../styles/globals.css";
 import type {AppProps} from "next/app";
-import { Analytics } from "@vercel/analytics/react";
+import {Analytics} from "@vercel/analytics/react";
 import {createTheme, NextUIProvider} from "@nextui-org/react";
 import {ThemeProvider as NextThemesProvider} from "next-themes";
+import {HydrationProvider, Server, Client} from "react-hydration-provider";
 
 const lightTheme = createTheme({
     type: 'light',
@@ -20,19 +21,21 @@ const darkTheme = createTheme({
 
 function MyApp({Component, pageProps}: AppProps) {
     return (
-        <NextThemesProvider
-            defaultTheme="system"
-            attribute="class"
-            value={{
-                light: lightTheme.className,
-                dark: darkTheme.className,
-            }}
-        >
-            <NextUIProvider>
-                <Component {...pageProps} />
-            </NextUIProvider>
-            <Analytics />
-        </NextThemesProvider>
+        <HydrationProvider>
+            <NextThemesProvider
+                defaultTheme="system"
+                attribute="class"
+                value={{
+                    light: lightTheme.className,
+                    dark: darkTheme.className,
+                }}
+            >
+                <NextUIProvider>
+                    <Component {...pageProps} />
+                </NextUIProvider>
+                <Analytics/>
+            </NextThemesProvider>
+        </HydrationProvider>
     );
 }
 

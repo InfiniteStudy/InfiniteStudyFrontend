@@ -28,3 +28,13 @@ body {
 .rounded-image-10 {
    border-radius: 10px;
 }
+
+.rbc-month-row {
+   display: flex;
+   position: relative;
+   flex-direction: column;
+   flex: 1 0;
+   flex-basis: 120px !important;
+   overflow: hidden;
+   height: 100%;
+}

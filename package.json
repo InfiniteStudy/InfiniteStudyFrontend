@@ -2,6 +2,7 @@
   "name": "infinite-study-frontend",
   "version": "0.0.1",
   "private": true,
+  "type": "commonjs",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -19,11 +20,14 @@
     "next": "13.4.7",
     "next-themes": "0.2.1",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-big-calendar": "^1.8.5",
+    "react-dom": "18.2.0",
+    "react-hydration-provider": "^2.0.0"
   },
   "devDependencies": {
     "@types/node": "20.4.5",
     "@types/react": "18.2.17",
+    "@types/react-big-calendar": "^1.8.3",
     "@types/react-dom": "18.2.7",
     "eslint": "8.46.0",
     "eslint-config-next": "13.4.12",
