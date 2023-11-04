@@ -1,5 +1,7 @@
 import React from "react";
-import {Modal, Button, Text, Input, Row, Checkbox} from "@nextui-org/react";
+import {Modal, Button, Text, Input, Row, Checkbox, Switch} from "@nextui-org/react";
+import {Box} from "../styles/box";
+import {Flex} from "../styles/flex";
 
 export const Password = ({fill, size = undefined, height = undefined, width = undefined, ...props}) => {
     return (
@@ -44,6 +46,7 @@ export const Mail = ({fill, size = undefined, height = undefined, width = undefi
 
 export default function LoginModal() {
     const [visible, setVisible] = React.useState(false);
+    const [isLogin, setIsLogin] = React.useState(true);
     const handler = () => setVisible(true);
     const closeHandler = () => {
         setVisible(false);
@@ -52,22 +55,39 @@ export default function LoginModal() {
     return (
         <div>
             <Button auto ghost color="success" onPress={handler}>
-                Login
+                Login / Sign Up
             </Button>
+
             <Modal
                 closeButton
-                animated={false}
+                animated={true}
                 aria-labelledby="modal-title"
                 open={visible}
                 onClose={closeHandler}
             >
                 <Modal.Header>
-                    <Text id="modal-title" size={18}>
-                        Welcome to{" "}
-                        <Text b size={18}>
-                            Infinite Study
+                    <Flex direction={"column"} css={{
+                        gap: "$3",
+                        alignItems: "center",
+                    }}>
+                        <Text id="modal-title" size={18}>
+                            Welcome to{" "}
+                            <Text b size={18}>
+                                Infinite Study
+                            </Text>
                         </Text>
-                    </Text>
+
+                        <Flex direction={"row"} css={{
+                            gap: "$3",
+                            alignItems: "center",
+                        }}>
+                            <Text b size={14} css={{pt: "$2"}} color={isLogin ? "normal" : "success"}>Sign Up</Text>
+                            <Switch size="md" color="success" defaultChecked onChange={(event) => {
+                                setIsLogin(event.target.checked);
+                            }}/>
+                            <Text b size={14} css={{pt: "$2"}} color={isLogin ? "success" : "normal"}>Log In</Text>
+                        </Flex>
+                    </Flex>
                 </Modal.Header>
                 <Modal.Body>
                     <Input
@@ -80,6 +100,7 @@ export default function LoginModal() {
                         contentLeft={<Mail fill="currentColor"/>}
                     />
                     <Input
+                        type={"password"}
                         clearable
                         bordered
                         fullWidth
@@ -88,6 +109,19 @@ export default function LoginModal() {
                         placeholder="Password"
                         contentLeft={<Password fill="currentColor"/>}
                     />
+                    {
+                        !isLogin &&
+                        <Input
+                            type={"password"}
+                            clearable
+                            bordered
+                            fullWidth
+                            color="primary"
+                            size="lg"
+                            placeholder="Confirm Password"
+                            contentLeft={<Password fill="currentColor"/>}
+                        />
+                    }
                     <Row justify="space-between">
                         <Checkbox>
                             <Text size={14}>Remember me</Text>
@@ -95,12 +129,12 @@ export default function LoginModal() {
                         <Text size={14}>Forgot password?</Text>
                     </Row>
                 </Modal.Body>
-                <Modal.Footer>
+                <Modal.Footer justify={"space-between"}>
                     <Button auto flat color="error" onPress={closeHandler}>
                         Close
                     </Button>
                     <Button auto onPress={closeHandler}>
-                        Sign in
+                        {isLogin ? "Log In" : "Sign Up"}
                     </Button>
                 </Modal.Footer>
             </Modal>
