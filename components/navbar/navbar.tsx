@@ -7,7 +7,7 @@ import {icons} from "../icons/icons";
 import {Logo} from "../icons/logo";
 import {useTheme as useNextTheme} from "next-themes";
 import {useTheme} from "@nextui-org/react";
-import {GithubIcon} from "../icons/GithubIcon";
+import LoginModal from "../login/loginModal";
 
 interface DropdownElement {
     key: string;
@@ -251,6 +251,10 @@ export const Nav = () => {
                             setTheme(e.target.checked ? "dark" : "light")
                         }
                     />
+                </Navbar.Item>
+
+                <Navbar.Item hideIn={"xs"}>
+                    <LoginModal/>
                 </Navbar.Item>
             </Navbar.Content>
         </Navbar>

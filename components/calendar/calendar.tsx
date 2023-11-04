@@ -10,6 +10,8 @@ import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import React, {useCallback, useMemo, useState} from "react";
 import {HydrationProvider, Server, Client} from "react-hydration-provider";
 
+const DragDropCalendar = withDragAndDrop(BigCalendar);
+
 interface CalendarProps {
     name?: string;
     events?: any;
@@ -54,17 +56,17 @@ const events = [
 export const Calendar = (props: CalendarProps = {}) => {
     const [myEvents, setMyEvents] = useState(props.events)
 
-    const DragDropCalendar = withDragAndDrop(BigCalendar)
-
     return (
         <div>
             <Client>
                 <DragDropCalendar
                     selectable
+                    resizable
                     localizer={localizer}
                     events={myEvents}
-                    defaultView={Views.WEEK}
+                    // views={[Views.DAY, Views.WEEK, Views.MONTH]}
                     views={[Views.DAY, Views.WEEK, Views.MONTH]}
+                    defaultView={Views.WEEK}
                     step={60}
                     defaultDate={new Date(2018, 0, 29)}
 
@@ -92,6 +94,42 @@ export const Calendar = (props: CalendarProps = {}) => {
 
                     onDragStart={({event}) => {
                         console.log("Event drag started", event);
+                    }}
+
+                    // onDragOver={(event) => {
+                    //     console.log("Event drag over", event);
+                    // }}
+
+                    // onSelectSlot={(event) => {
+                    //     console.log("Event selected", event);
+                    //     setMyEvents((prev) => {
+                    //         const id = prev.length + 1
+                    //         return [...prev, {id, start: event.start, end: event.end}]
+                    //     });
+                    // }}
+
+                    eventPropGetter={useCallback(
+                        (event) => ({
+                            ...(event.isDraggable
+                                ? {className: 'isDraggable'}
+                                : {className: 'nonDraggable'}),
+                        }),
+                        []
+                    )}
+
+                    onSelectSlot={useCallback(
+                        (event) => {
+                            setMyEvents((prev) => {
+                                const idList = prev.map((item) => item.id)
+                                const newId = Math.max(...idList) + 1
+                                return [...prev, {...event, id: newId}]
+                            });
+                        },
+                        [setMyEvents]
+                    )}
+
+                    onDoubleClickEvent={(event) => {
+                        console.log("Event double clicked", event);
                     }}
                 />
             </Client>
