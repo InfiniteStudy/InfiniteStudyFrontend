@@ -1,24 +1,13 @@
 import type {NextPage} from 'next';
 import {Nav} from '../components/navbar/navbar';
 import {Layout} from '../components/navbar/layout';
-import {Trusted} from '../components/trusted';
 import {Box} from '../components/styles/box';
-import {Features1} from '../components/features1';
-import {Features2} from '../components/features2';
-import {Features3} from '../components/features3';
-import {Testimonials} from '../components/tesminonials';
-import {Statistics} from '../components/statistics';
-import {Plans} from '../components/plans';
-import {Faq} from '../components/faq';
-import {Trial} from '../components/trial';
 import {Footer} from '../components/footer';
 import {Flex} from "../components/styles/flex";
-import {Button, Divider, Image, Input, Link, Text, useTheme} from "@nextui-org/react";
-import {CheckIcon} from "../components/icons/CheckIcon";
+import {Divider, Image, Text, useTheme} from "@nextui-org/react";
 import React from "react";
 import {PageTag} from "../components/meta/pageTag";
 import {ArticleCard} from "../components/article/card";
-import {Logo} from "../components/icons/logo";
 import {useTheme as useNextTheme} from "next-themes";
 
 const homeImage = "/images/darkModeLogo.png";
