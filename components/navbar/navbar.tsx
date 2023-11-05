@@ -8,6 +8,7 @@ import {Logo} from "../icons/logo";
 import {useTheme as useNextTheme} from "next-themes";
 import {useTheme} from "@nextui-org/react";
 import LoginModal from "../login/loginModal";
+import {Flex} from "../styles/flex";
 
 interface DropdownElement {
     key: string;
@@ -185,16 +186,25 @@ function NavbarCollapseMenu(props: NavbarDropdownMenuProps) {
     )
 }
 
+const AccountModal = () => {
+    const tmpLocalStorage = typeof window !== "undefined" ? localStorage : null;
+    const userIDExists = tmpLocalStorage && tmpLocalStorage.getItem("userID");
+
+    return (
+        <div>
+            {userIDExists ? <Button auto ghost color="success" css={{
+                height: "45px",
+            }}>
+                Account
+            </Button> : null}
+        </div>
+    )
+}
+
 export const Nav = () => {
     const {setTheme} = useNextTheme();
     const {isDark, type} = useTheme();
-    const collapseItems = [
-        "Projects",
-        "Tutorials",
-        "Articles",
-        "Photography",
-        "Socials",
-    ];
+
     return (
         <Navbar
             isBordered
@@ -225,9 +235,6 @@ export const Nav = () => {
                         pl: "6rem",
                     }}
                 >
-
-                    <NavbarDropdownMenu label={"Socials"} elements={socials}/>
-
                 </Navbar.Content>
             </Navbar.Brand>
 
@@ -252,6 +259,10 @@ export const Nav = () => {
                         }
                     />
                 </Navbar.Item>
+
+                {/*<Navbar.Item hideIn={"xs"}>*/}
+                {/*    <AccountModal/>*/}
+                {/*</Navbar.Item>*/}
 
                 <Navbar.Item hideIn={"xs"}>
                     <LoginModal/>

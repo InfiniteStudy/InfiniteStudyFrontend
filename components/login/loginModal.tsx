@@ -171,14 +171,18 @@ export default function LoginModal() {
 
     if (tmpLocalStorage && tmpLocalStorage["userID"]) {
         return (
-            <Button auto ghost color="success" onPress={logOutHandler}>
+            <Button auto ghost color="success" onPress={logOutHandler} css={{
+                height: "45px",
+            }}>
                 Log Out
             </Button>
         )
     } else {
         return (
             <div>
-                <Button auto ghost color="success" onPress={handler}>
+                <Button auto ghost color="success" onPress={handler} css={{
+                    height: "45px",
+                }}>
                     Login / Sign Up
                 </Button>
 
