@@ -4,18 +4,96 @@ import {Layout} from '../components/navbar/layout';
 import {Box} from '../components/styles/box';
 import {Footer} from '../components/footer';
 import {Flex} from "../components/styles/flex";
-import {Divider, Image, Text, useTheme} from "@nextui-org/react";
+import {Button, Divider, Image, Text, useTheme} from "@nextui-org/react";
 import React from "react";
 import {PageTag} from "../components/meta/pageTag";
 import {ArticleCard} from "../components/article/card";
 import {useTheme as useNextTheme} from "next-themes";
-import {Calendar} from "../components/calendar/calendar";
+import {Event, Calendar} from "../components/calendar/calendar";
+import {CalendarDateTime} from "@internationalized/date";
+import {userStore} from "../components/safeLocalStorage/safeLocalStorage";
+
+import {addTimeSlot, findStudySlots, getAccountInformation} from "../components/backendConnect/backendConnect"
 
 const homeImage = "/images/darkModeLogo.png";
+
+function getFullWeeksBetween(d1, d2) {
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000; // Number of milliseconds in a week
+    const differenceInMs = Math.abs(d2 - d1); // Difference in milliseconds
+    return Math.floor(differenceInMs / msPerWeek); // Divide by milliseconds per week and floor for full weeks
+}
 
 const Home: NextPage = () => {
     const {setTheme} = useNextTheme();
     const {isDark, type} = useTheme();
+
+    const currentUserID = userStore((state: any) => state.userID);
+    const setUserID = userStore((state: any) => state.setUserID);
+
+    const [events, setEvents] = React.useState<Event[]>([
+        {
+            id: 0,
+            title: "Test Event",
+            start: new Date(),
+            end: new Date(),
+            isStudy: false,
+        }
+    ]);
+
+    const [studyGroups, setStudyGroups] = React.useState<any[]>([]);
+    let studyGroupCards: any[] = [];
+
+    const studyGroupFinderHandler = () => {
+        // Split events into (weekID, startMinute, endMinute) tuples
+        let result: { userID: number, weekID: number, start: number, end: number }[] = [];
+        const timeOrigin = new Date(2023, 9, 5);
+        for (let event of events) {
+            const weekID = getFullWeeksBetween(timeOrigin, event.start);
+            const startMinute = event.start.getDay() * 24 * 60 + event.start.getHours() * 60 + event.start.getMinutes();
+            const endMinute = event.end.getDay() * 24 * 60 + event.end.getHours() * 60 + event.end.getMinutes();
+            result.push({userID: currentUserID, weekID: weekID, start: startMinute, end: endMinute});
+        }
+
+        console.log("Events:", result);
+
+        // Push times to backend
+        for (let event of result) {
+            addTimeSlot(event).then((response) => {
+                console.log("Add Time Slot:", response);
+
+                if (event === result[result.length - 1]) {
+                    // Find study groups
+                    // getAccountInformation(currentUserID).then((ret) => {
+                    // const subject = ret["subject"];
+                    const subject = "Computer Science";
+                    findStudySlots(currentUserID, subject).then((response) => {
+                        console.log("Find Study Slots:", response);
+                        setStudyGroups(response);
+
+                        response.forEach(([username, times]) => {
+                            studyGroupCards.push(
+                                <ArticleCard
+                                    key={username}
+                                    width={300}
+                                    height={450}
+                                    title={username}
+                                    description={"Test Description but it's really long to test how the card wraps text and to see whether the little grey box expands to fit the description"}
+                                    tags={[
+                                        "LibRapid",
+                                        "High Performance Computing",
+                                    ]
+                                    }
+                                    image={"/images/neuralNetworkInterpretation.jpg"}
+                                    link={"https://google.com"}
+                                />
+                            );
+                        });
+                    });
+                    // });
+                }
+            });
+        }
+    }
 
     return (
         <Layout>
@@ -121,52 +199,6 @@ const Home: NextPage = () => {
                     </Box>
                 </Flex>
 
-                <Box css={{
-                    pt: '$10',
-                    pb: '$10',
-                    pl: '$15',
-                    pr: '$15',
-                }}>
-                    <Calendar events={[
-                        {
-                            id: 0,
-                            title: "Board meeting",
-                            start: new Date(2018, 0, 29, 9, 0, 0),
-                            end: new Date(2018, 0, 29, 13, 0, 0),
-                            isStudy: false
-                        },
-                        {
-                            id: 1,
-                            title: "MS training",
-                            allDay: true,
-                            start: new Date(2018, 0, 29, 14, 0, 0),
-                            end: new Date(2018, 0, 29, 16, 30, 0),
-                            isStudy: false
-                        },
-                        {
-                            id: 2,
-                            title: "Team lead meeting",
-                            start: new Date(2018, 0, 29, 8, 30, 0),
-                            end: new Date(2018, 0, 29, 12, 30, 0),
-                            isStudy: false
-                        },
-                        {
-                            id: 11,
-                            title: "Birthday Party",
-                            start: new Date(2018, 0, 30, 7, 0, 0),
-                            end: new Date(2018, 0, 30, 10, 30, 0),
-                            isStudy: false
-                        },
-                        {
-                            id: 69,
-                            title: "Study Period",
-                            start: new Date(2018, 0, 30, 16, 0, 0),
-                            end: new Date(2018, 0, 30, 18, 30, 0),
-                            isStudy: true
-                        }
-                    ]}/>
-                </Box>
-
                 <Flex
                     direction={"column"}
                     align={"center"}
@@ -178,6 +210,18 @@ const Home: NextPage = () => {
                         pr: "$12",
                     }}
                 >
+                    <Box css={{
+                        pt: '$10',
+                        pb: '$10',
+                        pl: '$15',
+                        pr: '$15',
+                    }}>
+                        <Calendar events={events} setEvents={setEvents}/>
+                    </Box>
+
+                    <Button color={"success"} ghost onPress={studyGroupFinderHandler}>
+                        Find Someone to Study With
+                    </Button>
 
                     <Flex
                         direction={"row"}
@@ -187,35 +231,18 @@ const Home: NextPage = () => {
                         css={{
                             gap: "$10",
                             mw: "1500px"
-                        }}
-                    >
+                        }}>
 
-                        {
-                            [
-                                "Title 1",
-                                "Title 2",
-                                "Title 3",
-                                "Title 4"
-                            ].map((title) => (
-                                <ArticleCard
-                                    key={title}
-                                    width={300}
-                                    height={450}
-                                    title={title}
-                                    description={"Test Description but it's really long to test how the card wraps text and to see whether the little grey box expands to fit the description"}
-                                    tags={[
-                                        "LibRapid",
-                                        "High Performance Computing",
-                                    ]
-                                    }
-                                    image={"/images/neuralNetworkInterpretation.jpg"}
-                                    link={"https://google.com"}
-                                />
-                            ))
-                        }
 
                     </Flex>
                 </Flex>
+
+                {
+                    studyGroupCards.map((card) => (
+                        card
+                    ))
+                }
+
                 <Divider
                     css={{position: 'absolute', inset: '0p', left: '0', mt: '$10'}}
                 />

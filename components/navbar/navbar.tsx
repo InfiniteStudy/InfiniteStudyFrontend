@@ -10,7 +10,7 @@ import {useTheme} from "@nextui-org/react";
 import LoginModal, {Mail, Password} from "../login/loginModal";
 import {Flex} from "../styles/flex";
 import {userStore} from "../safeLocalStorage/safeLocalStorage";
-import {getAccountInformation, setAccountInformation} from "../backendConnect/backendConnect";
+import {getAccountInformation, setAccountInformation, getUserTimetableInfo, setUserTimetableInfo} from "../backendConnect/backendConnect";
 
 interface DropdownElement {
     key: string;
@@ -196,6 +196,7 @@ const AccountModal = () => {
     const [username, setUsername] = useState("");
     const [universityName, setUniversityName] = useState("");
     const [subject, setSubject] = useState("");
+    const [timetableLink, setTimetableLink] = useState("");
 
     const handler = () => {
         console.log("Current User ID:", currentUserID);
@@ -205,6 +206,10 @@ const AccountModal = () => {
                 setUniversityName(ret["university_name"]);
                 setSubject(ret["subject"]);
             });
+
+            // getUserTimetableInfo(currentUserID).then((ret) => {
+            //     setTimetableLink(ret["tt_link"]);
+            // });
         }
 
         setVisible(true);
@@ -321,6 +326,29 @@ const AccountModal = () => {
                             initialValue={subject}
                             onChange={(e) => {
                                 setSubject(e.target.value);
+                            }}
+                        />
+                    </Flex>
+
+                    <Flex direction={"row"} css={{
+                        gap: "$3",
+                        alignItems: "center"
+                    }}>
+                        <Text b size={18} css={{
+                            width: "150px",
+                        }}>
+                            Timetable Link:
+                        </Text>
+                        <Input
+                            aria-label={"modal-email-input"}
+                            clearable
+                            bordered
+                            fullWidth
+                            color="primary"
+                            size="lg"
+                            initialValue={subject}
+                            onChange={(e) => {
+                                setTimetableLink(e.target.value);
                             }}
                         />
                     </Flex>

@@ -15,37 +15,39 @@ import {Mail, Password} from "../login/loginModal";
 
 const DragDropCalendar = withDragAndDrop(BigCalendar);
 
+export interface Event {
+    id: number;
+    title?: string;
+    start: Date;
+    end: Date;
+    isStudy: false;
+}
+
 interface CalendarProps {
-    name?: string;
-    events?: any;
+    events: Event [];
+    setEvents: (events: Event[]) => void;
 }
 
 moment.locale("en-GB");
 const localizer = momentLocalizer(moment);
 
-export const Calendar = (props: CalendarProps = {}) => {
-    const [myEvents, setMyEvents] = useState(props.events);
+export const Calendar = (props: CalendarProps) => {
+    // const [myEvents, setMyEvents] = useState(props.events);
     const [visible, setVisible] = useState(false);
-    const [event, setEvent] = useState({
-        title: "",
-        start: new Date(),
-        end: new Date(),
-        isStudy: false
-    });
-    const [editingEventIndex, setEditingEventIndex] = useState(null);
+    const [editingEventIndex, setEditingEventIndex] = useState(0);
 
     const closeHandler = () => {
         setVisible(false);
     }
 
     const eventEditHandler = (eventToEdit: any) => {
-        const index = myEvents.findIndex((e: { id: any; }) => e.id === eventToEdit.id);
+        const index = props.events.findIndex((e: { id: any; }) => e.id === eventToEdit.id);
         setEditingEventIndex(index);
         setVisible(true);
     }
 
     const titleChangeHandler = (event: any) => {
-        myEvents[editingEventIndex ?? 0]["title"] = event.target.value;
+        props.events[editingEventIndex ?? 0]["title"] = event.target.value;
     }
 
     return (
@@ -55,32 +57,32 @@ export const Calendar = (props: CalendarProps = {}) => {
                     selectable
                     resizable
                     localizer={localizer}
-                    events={myEvents}
+                    events={props.events}
                     views={[Views.DAY, Views.WEEK, Views.MONTH]}
                     defaultView={Views.WEEK}
                     step={60}
-                    defaultDate={new Date(2018, 0, 29)}
+                    defaultDate={new Date()}
 
                     onEventDrop={useCallback(
                         ({event, start, end}) => {
-                            setMyEvents((prev) => {
+                            props.setEvents((prev) => {
                                 const existing = prev.find((ev) => ev.id === event.id) ?? {}
                                 const filtered = prev.filter((ev) => ev.id !== event.id)
                                 return [...filtered, {...existing, start, end}]
                             })
                         },
-                        [setMyEvents]
+                        [props.setEvents]
                     )}
 
                     onEventResize={useCallback(
                         ({event, start, end}) => {
-                            setMyEvents((prev) => {
+                            props.setEvents((prev) => {
                                 const existing = prev.find((ev) => ev.id === event.id) ?? {}
                                 const filtered = prev.filter((ev) => ev.id !== event.id)
                                 return [...filtered, {...existing, start, end}]
                             })
                         },
-                        [setMyEvents]
+                        [props.setEvents]
                     )}
 
                     onDragStart={({event}) => {
@@ -98,13 +100,13 @@ export const Calendar = (props: CalendarProps = {}) => {
 
                     onSelectSlot={useCallback(
                         (event) => {
-                            setMyEvents((prev) => {
+                            props.setEvents((prev) => {
                                 const idList = prev.map((item) => item.id)
                                 const newId = Math.max(...idList) + 1
                                 return [...prev, {...event, id: newId}]
                             });
                         },
-                        [setMyEvents]
+                        [props.setEvents]
                     )}
 
                     onDoubleClickEvent={(event) => {
@@ -154,7 +156,7 @@ export const Calendar = (props: CalendarProps = {}) => {
                         <Text b size={18}>
                             Title:
                         </Text>
-                        <Input clearable bordered initialValue={myEvents[editingEventIndex || 0]["title"] ?? ""}
+                        <Input clearable bordered initialValue={props.events[editingEventIndex || 0]["title"] ?? ""}
                                onChange={titleChangeHandler}/>
                     </Flex>
                 </Modal.Body>

@@ -86,3 +86,83 @@ export async function setAccountInformation(userID: number, username: string, un
 
     return data
 }
+
+
+export async function getUserTimetableInfo(userID: number) {
+    const response = await fetch("http://localhost:8000/get-user-tt-link", {
+        method: 'POST',
+        body: JSON.stringify({
+            "user_id": userID
+        }),
+        headers: {
+            'Access-Control-Requested-Method': 'POST',
+            'Content-Type': 'application/json',
+        },
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong!')
+    }
+
+    return data
+}
+
+
+export async function setUserTimetableInfo(userID: number, ttlink: string, availability: string) {
+    const response = await fetch("http://localhost:8000/update-content-information", {
+        method: 'POST',
+        body: JSON.stringify({
+            "user_id": userID,
+            "tt_link": ttlink,
+            "availability": availability
+        }),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong!')
+    }
+
+    return data
+}
+
+export async function addTimeSlot(newItem: { userID: number, weekID: number, start: number, end: number }) {
+    const response = await fetch("http://localhost:8000/add_timeslot", {
+        method: 'POST',
+        body: JSON.stringify(newItem),
+        headers: {
+            'Access-Control-Requested-Method': 'POST',
+            'Content-Type': 'application/json',
+        },
+    })
+
+    return await response.json()
+}
+
+export async function findStudySlots(userID: number, subject: string) {
+    const response = await fetch("http://localhost:8000/get_overlap_timeslots", {
+        method: 'POST',
+        body: JSON.stringify({
+            "userID": userID,
+            "subject": subject
+        }),
+        headers: {
+            'Access-Control-Requested-Method': 'POST',
+            'Content-Type': 'application/json',
+        },
+    })
+
+    const data = await response.json()
+
+    // if (!response.ok) {
+    //     throw new Error(data.message || 'Something went wrong!')
+    // }
+
+    return data
+}
