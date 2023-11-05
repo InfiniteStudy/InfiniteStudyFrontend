@@ -1,4 +1,4 @@
-import {Button, Dropdown, Link, Navbar, Switch, Text, Image} from "@nextui-org/react";
+import {Button, Dropdown, Link, Navbar, Switch, Text, Image, Modal, Input, Row, Checkbox} from "@nextui-org/react";
 import React from "react";
 import {useRouter} from "next/router";
 import {useState} from "react";
@@ -7,8 +7,10 @@ import {icons} from "../icons/icons";
 import {Logo} from "../icons/logo";
 import {useTheme as useNextTheme} from "next-themes";
 import {useTheme} from "@nextui-org/react";
-import LoginModal from "../login/loginModal";
+import LoginModal, {Mail, Password} from "../login/loginModal";
 import {Flex} from "../styles/flex";
+import {userStore} from "../safeLocalStorage/safeLocalStorage";
+import {getAccountInformation, setAccountInformation} from "../backendConnect/backendConnect";
 
 interface DropdownElement {
     key: string;
@@ -187,16 +189,152 @@ function NavbarCollapseMenu(props: NavbarDropdownMenuProps) {
 }
 
 const AccountModal = () => {
-    const tmpLocalStorage = typeof window !== "undefined" ? localStorage : null;
-    const userIDExists = tmpLocalStorage && tmpLocalStorage.getItem("userID");
+    const [visible, setVisible] = useState(false);
+    const currentUserID = userStore((state: any) => state.userID);
+    const setUserID = userStore((state: any) => state.setUserID);
+
+    const [username, setUsername] = useState("");
+    const [universityName, setUniversityName] = useState("");
+    const [subject, setSubject] = useState("");
+
+    const handler = () => {
+        console.log("Current User ID:", currentUserID);
+        if (currentUserID !== null) {
+            getAccountInformation(currentUserID).then((ret) => {
+                setUsername(ret["username"]);
+                setUniversityName(ret["university_name"]);
+                setSubject(ret["subject"]);
+            });
+        }
+
+        setVisible(true);
+    }
+
+    const closeHandler = () => {
+        setVisible(false);
+    }
+
+    const saveHandler = () => {
+        setAccountInformation(currentUserID, username, universityName, subject).then((ret) => {
+            console.log(ret);
+        });
+        closeHandler();
+    }
 
     return (
         <div>
-            {userIDExists ? <Button auto ghost color="success" css={{
+            {currentUserID ? <Button auto ghost color="success" onPress={handler} css={{
                 height: "45px",
             }}>
                 Account
             </Button> : null}
+
+            <Modal
+                width={"50%"}
+                blur
+                closeButton
+                animated={true}
+                aria-labelledby="modal-title"
+                open={visible}
+                onClose={closeHandler}
+            >
+                <Modal.Header
+                    aria-label="modal-header"
+                >
+                    <Flex direction={"column"} css={{
+                        gap: "$3",
+                        alignItems: "center",
+                    }}
+                          aria-label="modal-header-flex"
+                    >
+                        <Text aria-label={"modal-title-text"} id="modal-title" size={18}>
+                            Infinite Study:
+                            <Text b size={18}>
+                                {" Edit Account"}
+                            </Text>
+                        </Text>
+                    </Flex>
+                </Modal.Header>
+                <Modal.Body aria-label={"modal-body"}>
+                    <Flex direction={"row"} css={{
+                        gap: "$3",
+                        alignItems: "center"
+                    }}>
+                        <Text b size={18} css={{
+                            width: "150px",
+                        }}>
+                            Username:
+                        </Text>
+                        <Input
+                            aria-label={"modal-email-input"}
+                            clearable
+                            bordered
+                            fullWidth
+                            color="primary"
+                            size="lg"
+                            initialValue={username}
+                            onChange={(e) => {
+                                setUsername(e.target.value);
+                            }}
+                        />
+                    </Flex>
+
+                    <Flex direction={"row"} css={{
+                        gap: "$3",
+                        alignItems: "center"
+                    }}>
+                        <Text b size={18} css={{
+                            width: "150px",
+                        }}>
+                            University:
+                        </Text>
+                        <Input
+                            aria-label={"modal-email-input"}
+                            clearable
+                            bordered
+                            fullWidth
+                            color="primary"
+                            size="lg"
+                            initialValue={universityName}
+                            onChange={(e) => {
+                                setUniversityName(e.target.value);
+                            }}
+                        />
+                    </Flex>
+
+                    <Flex direction={"row"} css={{
+                        gap: "$3",
+                        alignItems: "center"
+                    }}>
+                        <Text b size={18} css={{
+                            width: "150px",
+                        }}>
+                            Subject:
+                        </Text>
+                        <Input
+                            aria-label={"modal-email-input"}
+                            clearable
+                            bordered
+                            fullWidth
+                            color="primary"
+                            size="lg"
+                            initialValue={subject}
+                            onChange={(e) => {
+                                setSubject(e.target.value);
+                            }}
+                        />
+                    </Flex>
+                </Modal.Body>
+                <Modal.Footer justify={"space-between"}>
+                    <Button auto flat color="error" onPress={closeHandler}>
+                        Close
+                    </Button>
+
+                    <Button auto flat color="success" onPress={saveHandler}>
+                        Save
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     )
 }
@@ -238,7 +376,6 @@ export const Nav = () => {
                 </Navbar.Content>
             </Navbar.Brand>
 
-
             <Navbar.Collapse transitionTime={0} showIn={"xs"} style={{overflow: "auto", maxHeight: "85vh"}}>
                 <Navbar.CollapseItem>
                     <Switch
@@ -260,9 +397,9 @@ export const Nav = () => {
                     />
                 </Navbar.Item>
 
-                {/*<Navbar.Item hideIn={"xs"}>*/}
-                {/*    <AccountModal/>*/}
-                {/*</Navbar.Item>*/}
+                <Navbar.Item hideIn={"xs"}>
+                    <AccountModal/>
+                </Navbar.Item>
 
                 <Navbar.Item hideIn={"xs"}>
                     <LoginModal/>
