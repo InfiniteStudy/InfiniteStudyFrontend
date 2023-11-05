@@ -4,6 +4,7 @@ import {Analytics} from "@vercel/analytics/react";
 import {createTheme, NextUIProvider} from "@nextui-org/react";
 import {ThemeProvider as NextThemesProvider} from "next-themes";
 import {HydrationProvider, Server, Client} from "react-hydration-provider";
+import React from "react";
 
 const lightTheme = createTheme({
     type: 'light',
@@ -19,7 +20,13 @@ const darkTheme = createTheme({
     },
 });
 
+interface UserContextType {
+    userID: number | null;
+    setUserID: React.Dispatch<React.SetStateAction<number | null>>;
+}
+
 function MyApp({Component, pageProps}: AppProps) {
+
     return (
         <HydrationProvider>
             <NextThemesProvider

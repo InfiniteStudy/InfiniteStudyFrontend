@@ -23,7 +23,8 @@
     "react": "18.2.0",
     "react-big-calendar": "^1.8.5",
     "react-dom": "18.2.0",
-    "react-hydration-provider": "^2.0.0"
+    "react-hydration-provider": "^2.0.0",
+    "zustand": "^4.4.6"
   },
   "devDependencies": {
     "@types/node": "20.4.5",

@@ -1,8 +1,8 @@
-import React from "react";
+import React, {useEffect} from "react";
 import {Modal, Button, Text, Input, Row, Checkbox, Switch} from "@nextui-org/react";
 import {Box} from "../styles/box";
 import {Flex} from "../styles/flex";
-
+import {userStore} from "../safeLocalStorage/safeLocalStorage";
 import {signUp, logIn} from "../backendConnect/backendConnect";
 
 export const Password = ({fill, size = undefined, height = undefined, width = undefined, ...props}) => {
@@ -55,7 +55,9 @@ export default function LoginModal() {
     const [error, setError] = React.useState(false);
     const [errorMessage, setErrorMessage] = React.useState("");
 
-    const tmpLocalStorage = typeof window !== "undefined" ? localStorage : null;
+    const currentUserID = userStore((state: any) => state.userID);
+    const setUserID = userStore((state: any) => state.setUserID);
+
 
     const handler = () => {
         setVisible(true);
@@ -96,10 +98,7 @@ export default function LoginModal() {
                     console.log("Successful login")
                     setError(false);
 
-                    // Set user ID in local storage
-                    if (tmpLocalStorage) {
-                        tmpLocalStorage.setItem("userID", res["user_id"]);
-                    }
+                    setUserID(res["user_id"]);
 
                     closeHandler();
                 } else {
@@ -123,10 +122,7 @@ export default function LoginModal() {
                     console.log("Successful sign up")
                     setError(false);
 
-                    // Set user ID in local storage
-                    if (tmpLocalStorage) {
-                        tmpLocalStorage.setItem("userID", res["user_id"]);
-                    }
+                    setUserID(res["user_id"]);
 
                     closeHandler();
                 } else {
@@ -146,9 +142,7 @@ export default function LoginModal() {
 
     const logOutHandler = () => {
         // Clear user ID in local storage
-        if (tmpLocalStorage) {
-            tmpLocalStorage.removeItem("userID");
-        }
+        setUserID(null);
 
         // Refresh page
         window.location.reload();
@@ -169,125 +163,118 @@ export default function LoginModal() {
         }
     }
 
-    if (tmpLocalStorage && tmpLocalStorage["userID"]) {
-        return (
-            <Button auto ghost color="success" onPress={logOutHandler} css={{
+    return (
+        <div>
+            <Button auto ghost color={currentUserID ? "warning" : "success"}
+                    onPress={currentUserID ? logOutHandler : handler} css={{
                 height: "45px",
             }}>
-                Log Out
+                {
+                    currentUserID ? "Log Out" : "Login / Sign Up"
+                }
             </Button>
-        )
-    } else {
-        return (
-            <div>
-                <Button auto ghost color="success" onPress={handler} css={{
-                    height: "45px",
-                }}>
-                    Login / Sign Up
-                </Button>
 
-                <Modal
-                    blur
-                    closeButton
-                    animated={true}
-                    aria-labelledby="modal-title"
-                    open={visible}
-                    onClose={closeHandler}
+            <Modal
+                blur
+                closeButton
+                animated={true}
+                aria-labelledby="modal-title"
+                open={visible}
+                onClose={closeHandler}
+            >
+                <Modal.Header
+                    aria-label="modal-header"
                 >
-                    <Modal.Header
-                        aria-label="modal-header"
+                    <Flex direction={"column"} css={{
+                        gap: "$3",
+                        alignItems: "center",
+                    }}
+                          aria-label="modal-header-flex"
                     >
-                        <Flex direction={"column"} css={{
+                        <Text aria-label={"modal-title-text"} id="modal-title" size={18}>
+                            Welcome to{" "}
+                            <Text b size={18}>
+                                Infinite Study
+                            </Text>
+                        </Text>
+
+                        <Flex aria-label={"modal-content-flex"} direction={"row"} css={{
                             gap: "$3",
                             alignItems: "center",
-                        }}
-                              aria-label="modal-header-flex"
-                        >
-                            <Text aria-label={"modal-title-text"} id="modal-title" size={18}>
-                                Welcome to{" "}
-                                <Text b size={18}>
-                                    Infinite Study
-                                </Text>
-                            </Text>
-
-                            <Flex aria-label={"modal-content-flex"} direction={"row"} css={{
-                                gap: "$3",
-                                alignItems: "center",
-                            }}>
-                                <Text aria-label={"modal-signup"} b size={14} css={{pt: "$2"}}
-                                      color={isLogin ? "normal" : "success"}>Sign Up</Text>
-                                <Switch aria-label={"modal-signup-toggle"} size="md" color="success" initialChecked
-                                        onChange={(event) => {
-                                            setIsLogin(event.target.checked);
-                                        }}/>
-                                <Text aria-label={"modal-login"} b size={14} css={{pt: "$2"}}
-                                      color={isLogin ? "success" : "normal"}>Log In</Text>
-                            </Flex>
+                        }}>
+                            <Text aria-label={"modal-signup"} b size={14} css={{pt: "$2"}}
+                                  color={isLogin ? "normal" : "success"}>Sign Up</Text>
+                            <Switch aria-label={"modal-signup-toggle"} size="md" color="success" initialChecked
+                                    onChange={(event) => {
+                                        setIsLogin(event.target.checked);
+                                    }}/>
+                            <Text aria-label={"modal-login"} b size={14} css={{pt: "$2"}}
+                                  color={isLogin ? "success" : "normal"}>Log In</Text>
                         </Flex>
-                    </Modal.Header>
-                    <Modal.Body aria-label={"modal-body"}>
+                    </Flex>
+                </Modal.Header>
+                <Modal.Body aria-label={"modal-body"}>
+                    <Input
+                        aria-label={"modal-email-input"}
+                        clearable
+                        bordered
+                        fullWidth
+                        color="primary"
+                        size="lg"
+                        placeholder="Email"
+                        contentLeft={<Mail fill="currentColor"/>}
+                        onChange={emailHandler}
+                    />
+                    <Input
+                        aria-label={"modal-password-input"}
+                        type={"password"}
+                        clearable
+                        bordered
+                        fullWidth
+                        color="primary"
+                        size="lg"
+                        placeholder="Password"
+                        contentLeft={<Password fill="currentColor"/>}
+                        onChange={passwordHandler}
+                    />
+                    {
+                        !isLogin &&
                         <Input
-                            aria-label={"modal-email-input"}
-                            clearable
-                            bordered
-                            fullWidth
-                            color="primary"
-                            size="lg"
-                            placeholder="Email"
-                            contentLeft={<Mail fill="currentColor"/>}
-                            onChange={emailHandler}
-                        />
-                        <Input
-                            aria-label={"modal-password-input"}
+                            aria-label={"modal-confirm-password-input"}
                             type={"password"}
                             clearable
                             bordered
                             fullWidth
                             color="primary"
                             size="lg"
-                            placeholder="Password"
+                            placeholder="Confirm Password"
                             contentLeft={<Password fill="currentColor"/>}
-                            onChange={passwordHandler}
+                            onChange={confirmPasswordHandler}
                         />
-                        {
-                            !isLogin &&
-                            <Input
-                                aria-label={"modal-confirm-password-input"}
-                                type={"password"}
-                                clearable
-                                bordered
-                                fullWidth
-                                color="primary"
-                                size="lg"
-                                placeholder="Confirm Password"
-                                contentLeft={<Password fill="currentColor"/>}
-                                onChange={confirmPasswordHandler}
-                            />
-                        }
-                        <Row justify="space-between">
-                            <Checkbox>
-                                <Text size={14}>Remember me</Text>
-                            </Checkbox>
-                            <Text size={14}>Forgot password?</Text>
-                        </Row>
-                    </Modal.Body>
-                    <Modal.Footer justify={"space-between"}>
-                        <Button auto flat color="error" onPress={closeHandler}>
-                            Close
-                        </Button>
-                        <Button auto
-                                color={error ? "error" : "success"}
-                                onPress={() => {
-                                    loginHandler(email, password, confirmPassword).then(() => {
-                                        // closeHandler();
-                                        console.log("Login");
-                                    });
-                                }}>
-                            {signupButton()}
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
-            </div>
-        );
-    }
+                    }
+                    <Row justify="space-between">
+                        <Checkbox>
+                            <Text size={14}>Remember me</Text>
+                        </Checkbox>
+                        <Text size={14}>Forgot password?</Text>
+                    </Row>
+                </Modal.Body>
+                <Modal.Footer justify={"space-between"}>
+                    <Button auto flat color="error" onPress={closeHandler}>
+                        Close
+                    </Button>
+                    <Button auto
+                            color={error ? "error" : "success"}
+                            onPress={() => {
+                                loginHandler(email, password, confirmPassword).then(() => {
+                                    // closeHandler();
+                                    console.log("Login");
+                                });
+                            }}>
+                        {signupButton()}
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </div>
+    );
 }
