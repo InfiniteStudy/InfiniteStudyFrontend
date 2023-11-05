@@ -3,6 +3,8 @@ import {Modal, Button, Text, Input, Row, Checkbox, Switch} from "@nextui-org/rea
 import {Box} from "../styles/box";
 import {Flex} from "../styles/flex";
 
+import {signUp, logIn} from "../backendConnect/backendConnect";
+
 export const Password = ({fill, size = undefined, height = undefined, width = undefined, ...props}) => {
     return (
         <svg
@@ -47,97 +49,241 @@ export const Mail = ({fill, size = undefined, height = undefined, width = undefi
 export default function LoginModal() {
     const [visible, setVisible] = React.useState(false);
     const [isLogin, setIsLogin] = React.useState(true);
-    const handler = () => setVisible(true);
+    const [email, setEmail] = React.useState("");
+    const [password, setPassword] = React.useState("");
+    const [confirmPassword, setConfirmPassword] = React.useState("");
+    const [error, setError] = React.useState(false);
+    const [errorMessage, setErrorMessage] = React.useState("");
+
+    const tmpLocalStorage = typeof window !== "undefined" ? localStorage : null;
+
+    const handler = () => {
+        setVisible(true);
+    }
+
+    const emailHandler = (event) => {
+        setEmail(event.target.value);
+    }
+
+    const passwordHandler = (event) => {
+        setPassword(event.target.value);
+    }
+
+    const confirmPasswordHandler = (event) => {
+        setConfirmPassword(event.target.value);
+    }
+
     const closeHandler = () => {
         setVisible(false);
     };
 
-    return (
-        <div>
-            <Button auto ghost color="success" onPress={handler}>
-                Login / Sign Up
+    const loginHandler = async (username, password, confirmPassword) => {
+        console.log("Username: " + username, "Password: " + password, "Confirm Password: " + confirmPassword);
+        try {
+            const res = await fetch(`https://jsonplaceholder.typicode.com/posts/1`);
+            const data = await res.json();
+            console.log(data);
+        } catch (err) {
+            console.log(err);
+        }
+
+        if (isLogin) {
+            // login
+            const userInfo = logIn(email, password).then((res) => {
+                console.log(res);
+                if (res["login"]) {
+                    // Successful sign up
+                    console.log("Successful login")
+                    setError(false);
+
+                    // Set user ID in local storage
+                    if (tmpLocalStorage) {
+                        tmpLocalStorage.setItem("userID", res["user_id"]);
+                    }
+
+                    closeHandler();
+                } else {
+                    // Unsuccessful sign up
+                    setError(true);
+                    setErrorMessage(res["message"]);
+
+                    // Wait 3 seconds before clearing error
+                    setTimeout(() => {
+                        setError(false);
+                        setErrorMessage("");
+                    }, 2000);
+                }
+            });
+        } else {
+            // sign up
+            const userInfo = signUp(email, password, confirmPassword).then((res) => {
+                console.log(res);
+                if (res["signup"]) {
+                    // Successful sign up
+                    console.log("Successful sign up")
+                    setError(false);
+
+                    // Set user ID in local storage
+                    if (tmpLocalStorage) {
+                        tmpLocalStorage.setItem("userID", res["user_id"]);
+                    }
+
+                    closeHandler();
+                } else {
+                    // Unsuccessful sign up
+                    setError(true);
+                    setErrorMessage(res["message"]);
+
+                    // Wait 3 seconds before clearing error
+                    setTimeout(() => {
+                        setError(false);
+                        setErrorMessage("");
+                    }, 2000);
+                }
+            });
+        }
+    }
+
+    const logOutHandler = () => {
+        // Clear user ID in local storage
+        if (tmpLocalStorage) {
+            tmpLocalStorage.removeItem("userID");
+        }
+
+        // Refresh page
+        window.location.reload();
+    }
+
+    const signupButton = () => {
+        if (error) {
+            return (
+                <Text>
+                    {errorMessage}
+                </Text>
+            );
+        } else {
+            return (
+                <Text>
+                    {isLogin ? "Log In" : "Sign Up"}
+                </Text>);
+        }
+    }
+
+    if (tmpLocalStorage && tmpLocalStorage["userID"]) {
+        return (
+            <Button auto ghost color="success" onPress={logOutHandler}>
+                Log Out
             </Button>
+        )
+    } else {
+        return (
+            <div>
+                <Button auto ghost color="success" onPress={handler}>
+                    Login / Sign Up
+                </Button>
 
-            <Modal
-                closeButton
-                animated={true}
-                aria-labelledby="modal-title"
-                open={visible}
-                onClose={closeHandler}
-            >
-                <Modal.Header>
-                    <Flex direction={"column"} css={{
-                        gap: "$3",
-                        alignItems: "center",
-                    }}>
-                        <Text id="modal-title" size={18}>
-                            Welcome to{" "}
-                            <Text b size={18}>
-                                Infinite Study
-                            </Text>
-                        </Text>
-
-                        <Flex direction={"row"} css={{
+                <Modal
+                    blur
+                    closeButton
+                    animated={true}
+                    aria-labelledby="modal-title"
+                    open={visible}
+                    onClose={closeHandler}
+                >
+                    <Modal.Header
+                        aria-label="modal-header"
+                    >
+                        <Flex direction={"column"} css={{
                             gap: "$3",
                             alignItems: "center",
-                        }}>
-                            <Text b size={14} css={{pt: "$2"}} color={isLogin ? "normal" : "success"}>Sign Up</Text>
-                            <Switch size="md" color="success" defaultChecked onChange={(event) => {
-                                setIsLogin(event.target.checked);
-                            }}/>
-                            <Text b size={14} css={{pt: "$2"}} color={isLogin ? "success" : "normal"}>Log In</Text>
+                        }}
+                              aria-label="modal-header-flex"
+                        >
+                            <Text aria-label={"modal-title-text"} id="modal-title" size={18}>
+                                Welcome to{" "}
+                                <Text b size={18}>
+                                    Infinite Study
+                                </Text>
+                            </Text>
+
+                            <Flex aria-label={"modal-content-flex"} direction={"row"} css={{
+                                gap: "$3",
+                                alignItems: "center",
+                            }}>
+                                <Text aria-label={"modal-signup"} b size={14} css={{pt: "$2"}}
+                                      color={isLogin ? "normal" : "success"}>Sign Up</Text>
+                                <Switch aria-label={"modal-signup-toggle"} size="md" color="success" initialChecked
+                                        onChange={(event) => {
+                                            setIsLogin(event.target.checked);
+                                        }}/>
+                                <Text aria-label={"modal-login"} b size={14} css={{pt: "$2"}}
+                                      color={isLogin ? "success" : "normal"}>Log In</Text>
+                            </Flex>
                         </Flex>
-                    </Flex>
-                </Modal.Header>
-                <Modal.Body>
-                    <Input
-                        clearable
-                        bordered
-                        fullWidth
-                        color="primary"
-                        size="lg"
-                        placeholder="Email"
-                        contentLeft={<Mail fill="currentColor"/>}
-                    />
-                    <Input
-                        type={"password"}
-                        clearable
-                        bordered
-                        fullWidth
-                        color="primary"
-                        size="lg"
-                        placeholder="Password"
-                        contentLeft={<Password fill="currentColor"/>}
-                    />
-                    {
-                        !isLogin &&
+                    </Modal.Header>
+                    <Modal.Body aria-label={"modal-body"}>
                         <Input
+                            aria-label={"modal-email-input"}
+                            clearable
+                            bordered
+                            fullWidth
+                            color="primary"
+                            size="lg"
+                            placeholder="Email"
+                            contentLeft={<Mail fill="currentColor"/>}
+                            onChange={emailHandler}
+                        />
+                        <Input
+                            aria-label={"modal-password-input"}
                             type={"password"}
                             clearable
                             bordered
                             fullWidth
                             color="primary"
                             size="lg"
-                            placeholder="Confirm Password"
+                            placeholder="Password"
                             contentLeft={<Password fill="currentColor"/>}
+                            onChange={passwordHandler}
                         />
-                    }
-                    <Row justify="space-between">
-                        <Checkbox>
-                            <Text size={14}>Remember me</Text>
-                        </Checkbox>
-                        <Text size={14}>Forgot password?</Text>
-                    </Row>
-                </Modal.Body>
-                <Modal.Footer justify={"space-between"}>
-                    <Button auto flat color="error" onPress={closeHandler}>
-                        Close
-                    </Button>
-                    <Button auto onPress={closeHandler}>
-                        {isLogin ? "Log In" : "Sign Up"}
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-        </div>
-    )
+                        {
+                            !isLogin &&
+                            <Input
+                                aria-label={"modal-confirm-password-input"}
+                                type={"password"}
+                                clearable
+                                bordered
+                                fullWidth
+                                color="primary"
+                                size="lg"
+                                placeholder="Confirm Password"
+                                contentLeft={<Password fill="currentColor"/>}
+                                onChange={confirmPasswordHandler}
+                            />
+                        }
+                        <Row justify="space-between">
+                            <Checkbox>
+                                <Text size={14}>Remember me</Text>
+                            </Checkbox>
+                            <Text size={14}>Forgot password?</Text>
+                        </Row>
+                    </Modal.Body>
+                    <Modal.Footer justify={"space-between"}>
+                        <Button auto flat color="error" onPress={closeHandler}>
+                            Close
+                        </Button>
+                        <Button auto
+                                color={error ? "error" : "success"}
+                                onPress={() => {
+                                    loginHandler(email, password, confirmPassword).then(() => {
+                                        // closeHandler();
+                                        console.log("Login");
+                                    });
+                                }}>
+                            {signupButton()}
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+            </div>
+        );
+    }
 }

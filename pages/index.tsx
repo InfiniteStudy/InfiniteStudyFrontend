@@ -133,7 +133,7 @@ const Home: NextPage = () => {
                             title: "Board meeting",
                             start: new Date(2018, 0, 29, 9, 0, 0),
                             end: new Date(2018, 0, 29, 13, 0, 0),
-                            resourceId: 1
+                            isStudy: false
                         },
                         {
                             id: 1,
@@ -141,21 +141,28 @@ const Home: NextPage = () => {
                             allDay: true,
                             start: new Date(2018, 0, 29, 14, 0, 0),
                             end: new Date(2018, 0, 29, 16, 30, 0),
-                            resourceId: 2
+                            isStudy: false
                         },
                         {
                             id: 2,
                             title: "Team lead meeting",
                             start: new Date(2018, 0, 29, 8, 30, 0),
                             end: new Date(2018, 0, 29, 12, 30, 0),
-                            resourceId: 3
+                            isStudy: false
                         },
                         {
                             id: 11,
                             title: "Birthday Party",
                             start: new Date(2018, 0, 30, 7, 0, 0),
                             end: new Date(2018, 0, 30, 10, 30, 0),
-                            resourceId: 4
+                            isStudy: false
+                        },
+                        {
+                            id: 69,
+                            title: "Study Period",
+                            start: new Date(2018, 0, 30, 16, 0, 0),
+                            end: new Date(2018, 0, 30, 18, 30, 0),
+                            isStudy: true
                         }
                     ]}/>
                 </Box>
